@@ -106,20 +106,15 @@ void img_extract(uint8 dist[][CAMERA_W], uint8 src[CAMERA_SIZE], uint32 srclen)
 void traversal(uint8 img[][CAMERA_W], Point prev[][CAMERA_W]) {
 	Point left_end = {EMPTY, EMPTY}, right_end = {EMPTY, EMPTY};
 	Point pos = {CAMERA_H - 1, 0};
+	Point end;
 
 	while (pos.y < CAMERA_W) {
-		left_end = processing(img, pos, prev);
-		if (!empty(left_end) && gray_boundary(img, prev, left_end))
-			break;
+		end = processing(img, pos, prev);
+		if (!empty(end) && gray_boundary(img, prev, end))
+			;
 		pos.y++;
 	}
 
-	while (pos.y < CAMERA_W) {
-		right_end = processing(img, pos, prev);
-		if (!empty(right_end) && gray_boundary(img, prev, right_end))
-			break;
-		pos.y++;
-	}
 }
 
 uint8 imgbuff[CAMERA_SIZE];

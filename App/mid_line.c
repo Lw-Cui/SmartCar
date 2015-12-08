@@ -48,6 +48,10 @@ uint8 empty(Point p) {
 	return p.x == EMPTY && p.y == EMPTY;
 }
 
+uint8 visit(Point prev[][CAMERA_W], Point p) {
+	return !empty(prev[p.x][p.y]);
+}
+
 uint8 equal(Point p1, Point p2) {
 	return p1.x == p2.x && p1.y == p2.y;
 }
@@ -91,12 +95,12 @@ void vertical_line(uint8 imgaddr[][CAMERA_W]) {
 uint8 gray_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point end) {
 	uint16 cnt = 0;
 
-	for (Point b = end; equal(prev[b.x][b.y], b); b = prev[b.x][b.y])
+	for (Point b = end; !equal(prev[b.x][b.y], b); b = prev[b.x][b.y])
 		cnt++;
 	
 	if (cnt > SUITABLE)
-		for (; equal(prev[end.x][end.y], end); end = prev[end.x][end.y])
-			img[end.x][end.y] = 128;
+		for (; !equal(prev[end.x][end.y], end); end = prev[end.x][end.y])
+			img[end.x][end.y] = 100;
 	else
 		return 0;
 
@@ -127,7 +131,7 @@ Point processing(uint8 imgaddr[][CAMERA_W], Point position, Point prev[][CAMERA_
 			Point np; 
 
 			set(&np, p.x + XTRAV[i], p.y + YTRAV[i]);
-			if (is_valid(np) && empty(np) && !is_same_color(imgaddr, np, p)) {
+			if (is_valid(np) && !visit(prev, np) && !is_same_color(imgaddr, np, p)) {
 				prev[np.x][np.y] = p;
 
 				queue[end++] = np;
