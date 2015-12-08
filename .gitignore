@@ -1,3 +1,14 @@
+# Fold condition
+Board/
+Chip/
+Lib/
+Prj/
+settings/
+
+# And something odd..
+FIRE_KL.eww
+*.c~
+
 # Object files
 *.o
 *.ko
