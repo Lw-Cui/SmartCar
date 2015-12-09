@@ -24,7 +24,6 @@
 
 #include "common.h"
 #include "mid_line.h"
-#define LEN 8
 
 /*!
  *  @brief      判断是否到边界
@@ -33,15 +32,15 @@
  *  @since      v1.0
  */
 uint8 terminal(Point p) {
-	return (p.x == 0 || p.y == 0 || p.y == CAMERA_W);
+	return p.x == 0 || p.y == 0 || p.y == CAMERA_W - 1;
 }
 
 uint8 is_valid(Point p) {
 	return (p.x >= 0 && p.x < CAMERA_H && p.y >= 0 && p.y < CAMERA_W);
 }
 
-uint8 is_same_color(uint8 imgaddr[][CAMERA_W], Point p1, Point p2) {
-	return (imgaddr[p1.x][p1.y] == imgaddr[p2.x][p2.y]);
+uint8 is_same_color(uint8 img[][CAMERA_W], Point p1, Point p2) {
+	return img[p1.x][p1.y] == img[p2.x][p2.y];
 }
 
 uint8 empty(Point p) {
@@ -71,14 +70,15 @@ void set(Point *p, int nx, int ny) {
 	p->y = ny;
 }
 
+#define LEN 8
 int8 XTRAV[LEN] = { 1,  0, -1,  1, -1,  1,  0, -1};
 int8 YTRAV[LEN] = {-1, -1, -1,  0,  0,  1,  1,  1};
 
 /* Vertical line */
-void vertical_line(uint8 imgaddr[][CAMERA_W]) {
+void vertical_line(uint8 img[][CAMERA_W]) {
 	int pos = 0;
 	while (pos < CAMERA_H) {
-		imgaddr[pos][CAMERA_W / 2] = 127;
+		img[pos][CAMERA_W / 2] = 127;
 		pos++;
 	}
 }
@@ -89,46 +89,23 @@ void vertical_line(uint8 imgaddr[][CAMERA_W]) {
  *  @since      v5.0            img_extract(img, imgbuff,CAMERA_SIZE);
  *  Sample usage:
  */
-
-#define SUITABLE 20
-
 uint8 gray_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point end) {
 	for (; !equal(prev[end.x][end.y], end); end = prev[end.x][end.y])
-		img[end.x][end.y] = 100;
+		img[end.x][end.y] = 150;
 	return 1;
 }
 
 /*!
- *  @brief      遍历最近一行，找到边界
- *  @param      img				图像数组
- *  @param      left_prev, right_prev		记录边界的数组
- *  @since      v1.0
- */
-void traversal(uint8 img[][CAMERA_W], Point prev[][CAMERA_W]) {
-	Point left_end = {EMPTY, EMPTY}, right_end = {EMPTY, EMPTY};
-	Point pos = {CAMERA_H - 1, 0};
-	Point end;
-
-	while (pos.y < CAMERA_W) {
-		end = processing(img, pos, prev);
-		if (!empty(end) && gray_boundary(img, prev, end))
-			;
-		pos.y++;
-	}
-
-}
-
-/*!
  *  @brief      查找中线
- *  @param      imgaddr		图像数据
+ *  @param      img		图像数据
  *  @param      prev	边线回溯
  *  @param      position	起始位置
  *  @return     边线的最后一点
  *  @since      v1.0
  */
 #define QLEN 250
-Point processing(uint8 imgaddr[][CAMERA_W], Point position, Point prev[][CAMERA_W]) {
 	Point queue[QLEN];
+Point processing(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) {
 	uint16 beg = 0, end = 0;
 
 	set(&prev[position.x][position.y], position.x, position.y);
@@ -141,14 +118,18 @@ Point processing(uint8 imgaddr[][CAMERA_W], Point position, Point prev[][CAMERA_
 		for (uint8 i = 0; i < LEN; i++) {
 			Point np; 
 
+			if (np.y == 59)
+				printf("");
+
 			set(&np, p.x + XTRAV[i], p.y + YTRAV[i]);
-			if (is_valid(np) && !visit(prev, np) && !is_same_color(imgaddr, np, p)) {
+			if (is_valid(np) && !visit(prev, np) && !is_same_color(img, np, p)) {
 				prev[np.x][np.y] = p;
 
 				queue[end++] = np;
 				end %= QLEN;
 
-				if (terminal(np)) return np;
+				if (terminal(np))
+					return np;
 			}
 		}
 	}
@@ -156,3 +137,29 @@ Point processing(uint8 imgaddr[][CAMERA_W], Point position, Point prev[][CAMERA_
 	set(&position, EMPTY, EMPTY);
 	return position;
 }
+
+/*!
+ *  @brief      遍历最近一行，找到边界
+ *  @param      img				图像数组
+ *  @param      left_prev, right_prev		记录边界的数组
+ *  @since      v1.0
+ */
+void traversal(uint8 img[][CAMERA_W]) {
+	Point left_end = {EMPTY, EMPTY}, right_end = {EMPTY, EMPTY};
+	Point pos = {CAMERA_H - 1, 0};
+	Point end;
+	Point prev[CAMERA_H][CAMERA_W];
+
+	for (int i = 0; i < CAMERA_H; i++)
+		for (int j = 0; j < CAMERA_W; j++)
+			set(&prev[i][j], EMPTY, EMPTY);
+
+	  while (pos.y < CAMERA_W) {
+		end =  processing(img, pos, prev);
+		if (!empty(end))
+			gray_boundary(img, prev, end);
+		 pos.y++;
+	}
+
+}
+

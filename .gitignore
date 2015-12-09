@@ -8,6 +8,7 @@ settings/
 # And something odd..
 FIRE_KL.eww
 *.c~
+*.h~
 
 # Object files
 *.o

@@ -1,32 +1,24 @@
 /*!
  *     COPYRIGHT NOTICE
- *     Copyright (c) 2013,脪掳禄冒驴脝录录
+ *     Copyright_prev (c) 2013,野火科技
  *     All rights reserved.
- *     录录脢玫脤脰脗脹拢潞脪掳禄冒鲁玫脩搂脗脹脤鲁 http://www.chuxue123.com
+ *     技术讨论：野火初学论坛 http://www.chuxue123.com
  *
- *     鲁媒脳垄脙梅鲁枚麓娄脥芒拢卢脪脭脧脗脣霉脫脨脛脷脠脻掳忙脠篓戮霉脢么脪掳禄冒驴脝录录脣霉脫脨拢卢脦麓戮颅脭脢脨铆拢卢虏禄碌脙脫脙脫脷脡脤脪碌脫脙脥戮拢卢
- *     脨脼赂脛脛脷脠脻脢卤卤脴脨毛卤拢脕么脪掳禄冒驴脝录录碌脛掳忙脠篓脡霉脙梅隆拢
+ *     除注明出处外，以下所有内容版权均属野火科技所有，未经允许，不得用于商业用途，
+ *     修改内容时必须保留野火科技的版权声明。
  *
- * @file       MK60_it.c
- * @brief      脪掳禄冒K60 脝陆脤篓脰脨露脧赂麓脦禄潞炉脢媒
- * @author     脪掳禄冒驴脝录录
+ * @file       main.c
+ * @brief      野火KL26 平台主程序
+ * @author     野火科技
  * @version    v5.0
- * @date       2013-06-26
+ * @date       2013-12-14
  */
+#include "camera.h"
 
 
-/*!
- *  @brief      露镁脰碌禄炉脥录脧帽陆芒脩鹿拢篓驴脮录盲 禄禄 脢卤录盲 陆芒脩鹿拢漏
- *  @param      dist            脥录脧帽陆芒脩鹿脛驴碌脛碌脴脰路
- *  @param      src             脥录脧帽陆芒脩鹿脭麓碌脴脰路
- *  @param      srclen          露镁脰碌禄炉脥录脧帽碌脛脮录脫脙驴脮录盲麓贸脨隆
- *  @since      v5.0            img_extract(img, imgbuff,CAMERA_SIZE);
- *  Sample usage:
- */
 void img_extract(uint8 dist[][CAMERA_W], uint8 src[CAMERA_SIZE], uint32 srclen)
 {
-    uint8 colour[2] = {255, 0}; //0 潞脥 1 路脰卤冒露脭脫娄碌脛脩脮脡芦
-    //脳垄拢潞脡陆脥芒碌脛脡茫脧帽脥路 0 卤铆脢戮 掳脳脡芦拢卢1卤铆脢戮 潞脷脡芦
+    uint8 colour[2] = {255, 0}; 
     uint8 tmpsrc;
 	uint8 line = 0;
 	uint8 *dst = dist[line];
@@ -46,23 +38,20 @@ void img_extract(uint8 dist[][CAMERA_W], uint8 src[CAMERA_SIZE], uint32 srclen)
 }
 
 
-//路垄脣脥脥录脧帽碌陆脡脧脦禄禄煤脧脭脢戮
-//虏禄脥卢碌脛脡脧脦禄禄煤拢卢虏禄脥卢碌脛脙眉脕卯
-//脠莽鹿没脢鹿脫脙脝盲脣没脡脧脦禄禄煤拢卢脭貌脨猫脪陋脨脼赂脛麓煤脗毛
 void vcan_sendimg(uint8 imgaddr[][CAMERA_W], uint32 height, uint32 width)
 {
 #define CMD_IMG     1
-    uint8 cmdf[2] = {CMD_IMG, ~CMD_IMG};    //脡陆脥芒脡脧脦禄禄煤 脢鹿脫脙碌脛脙眉脕卯
-    uint8 cmdr[2] = {~CMD_IMG, CMD_IMG};    //脡陆脥芒脡脧脦禄禄煤 脢鹿脫脙碌脛脙眉脕卯
+    uint8 cmdf[2] = {CMD_IMG, ~CMD_IMG};
+    uint8 cmdr[2] = {~CMD_IMG, CMD_IMG};
 	uint32 index = 0;
 
-    uart_putbuff(FIRE_PORT, cmdf, sizeof(cmdf));    //脧脠路垄脣脥脙眉脕卯
+    uart_putbuff(FIRE_PORT, cmdf, sizeof(cmdf)); 
 
 	while (index != height) {
-		uart_putbuff(FIRE_PORT, imgaddr[index], width); //脭脵路垄脣脥脥录脧帽
+		uart_putbuff(FIRE_PORT, imgaddr[index], width);
 		index++;
 	}
 
-    uart_putbuff(FIRE_PORT, cmdr, sizeof(cmdr));    //脧脠路垄脣脥脙眉脕卯
+    uart_putbuff(FIRE_PORT, cmdr, sizeof(cmdr));    
 }
 

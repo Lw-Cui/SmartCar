@@ -38,6 +38,6 @@ uint8 is_valid(Point p);
 uint8 equal(Point p1, Point p2);
 
 void vertical_line(uint8 imgaddr[][CAMERA_W]);
-void traversal(uint8 img[][CAMERA_W], Point prev[][CAMERA_W]);
+void traversal(uint8 img[][CAMERA_W]);
 
 #endif
