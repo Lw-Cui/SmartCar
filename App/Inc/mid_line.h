@@ -31,12 +31,13 @@ typedef struct {
 	int16 x, y;
 } Point;
 
-Point processing(uint8 imgaddr[][CAMERA_W], Point position, Point prev[][CAMERA_W]);
-uint8 gray_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point end);
-void vertical_line(uint8 imgaddr[][CAMERA_W]);
-
 void copy(Point *dist, Point *src);
 void set(Point *p, int nx, int ny);
 uint8 empty(Point p);
+uint8 is_valid(Point p);
+uint8 equal(Point p1, Point p2);
+
+void vertical_line(uint8 imgaddr[][CAMERA_W]);
+void traversal(uint8 img[][CAMERA_W], Point prev[][CAMERA_W]);
 
 #endif

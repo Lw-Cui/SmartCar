@@ -93,18 +93,29 @@ void vertical_line(uint8 imgaddr[][CAMERA_W]) {
 #define SUITABLE 20
 
 uint8 gray_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point end) {
-	uint16 cnt = 0;
-
-	for (Point b = end; !equal(prev[b.x][b.y], b); b = prev[b.x][b.y])
-		cnt++;
-	
-	if (cnt > SUITABLE)
-		for (; !equal(prev[end.x][end.y], end); end = prev[end.x][end.y])
-			img[end.x][end.y] = 100;
-	else
-		return 0;
-
+	for (; !equal(prev[end.x][end.y], end); end = prev[end.x][end.y])
+		img[end.x][end.y] = 100;
 	return 1;
+}
+
+/*!
+ *  @brief      遍历最近一行，找到边界
+ *  @param      img				图像数组
+ *  @param      left_prev, right_prev		记录边界的数组
+ *  @since      v1.0
+ */
+void traversal(uint8 img[][CAMERA_W], Point prev[][CAMERA_W]) {
+	Point left_end = {EMPTY, EMPTY}, right_end = {EMPTY, EMPTY};
+	Point pos = {CAMERA_H - 1, 0};
+	Point end;
+
+	while (pos.y < CAMERA_W) {
+		end = processing(img, pos, prev);
+		if (!empty(end) && gray_boundary(img, prev, end))
+			;
+		pos.y++;
+	}
+
 }
 
 /*!
@@ -137,7 +148,7 @@ Point processing(uint8 imgaddr[][CAMERA_W], Point position, Point prev[][CAMERA_
 				queue[end++] = np;
 				end %= QLEN;
 
-				if (end == beg || terminal(np)) return np;
+				if (terminal(np)) return np;
 			}
 		}
 	}

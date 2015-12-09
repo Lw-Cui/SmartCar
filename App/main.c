@@ -20,16 +20,14 @@
  */
 #include "include.h"
 #include "MKL_it.h"
+#include "camera.h"
 #include "mid_line.h"
 
 
-extern uint8 imgbuff[CAMERA_SIZE];
 extern volatile IMG_STATUS_e ov7725_eagle_img_flag;
-extern uint8 is_captured;
 
-void test() {
+void highlight() {
 	DisableInterrupts;
-	is_captured = 0;
 
 	uint8 img[CAMERA_H][CAMERA_W];
 	Point prev[CAMERA_H][CAMERA_W];
@@ -52,6 +50,7 @@ void  main(void)
 {
 	DisableInterrupts;
 
+	uint8 imgbuff[CAMERA_SIZE];
     camera_init(imgbuff);
     
     set_vector_handler(PORTA_VECTORn ,PORTA_IRQHandler);    //设置PORTA的中断服务函数为 PORTA_IRQHandler
@@ -68,8 +67,7 @@ void  main(void)
     {
       camera_get_img();                                     //在while(1)中不断使能PORTA，使得摄像头采集图像的信号到来后，就可以触发PORTA
 		if (ov7725_eagle_img_flag == IMG_FINISH)
-			test();
-		//	is_captured = 1;
+			highlight();
     }   
 }
 

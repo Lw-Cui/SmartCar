@@ -30,7 +30,5 @@
 void PORTA_IRQHandler();
 void DMA0_IRQHandler();
 void PIT_IRQHandler();
-void img_extract(uint8 dist[][CAMERA_W], uint8 src[CAMERA_SIZE], uint32 srclen);
-void vcan_sendimg(uint8 imgaddr[][CAMERA_W], uint32 height, uint32 width);
 
 #endif  //__MK60_IT_H__
