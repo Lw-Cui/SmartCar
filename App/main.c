@@ -16,12 +16,14 @@
 
 /*
  * include.h 中需要注释掉 MKL_BME.h
+ * 32% - 41% - 50% int 舵机占空比
  *
  */
 #include "include.h"
 #include "MKL_it.h"
 #include "camera.h"
 #include "mid_line.h"
+#include "point.h"
 
 
 extern volatile IMG_STATUS_e ov7725_eagle_img_flag;
