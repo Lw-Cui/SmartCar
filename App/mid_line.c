@@ -24,6 +24,7 @@
 
 #include "common.h"
 #include "mid_line.h"
+#include "camera.h"
 #include "point.h"
 
 
@@ -93,9 +94,6 @@ Point processing(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) 
 		for (uint8 i = 0; i < LEN; i++) {
 			Point np; 
 
-			if (np.y == 59)
-				printf("");
-
 			set(&np, p.x + XTRAV[i], p.y + YTRAV[i]);
 			if (is_valid(np) && !visit(prev, np) && !is_same_color(img, np, p)) {
 				prev[np.x][np.y] = p;
@@ -117,25 +115,42 @@ Point processing(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) 
  *  @brief      绘制边界
  *  @param      img				二维图像数组
  *  @param      prev			前驱数组
- *  @param		left_end		左边界
+ *  @param		s, b			两条边界起始点
  *  @since      v1.0
  */
-void draw_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point p, Point q) {
+void draw_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point s, Point b) {
+	int lenb = boundary_count(prev, b);
+	int lens = boundary_count(prev, s);
+	double ratio = (double)boundary_count(prev, b) / (double)boundary_count(prev, s);
 
-	double ratio = (double)boundary_count(prev, p) / (double)boundary_count(prev, q);
+	if (ratio < 1.0) {
+		swap(&s, &b);
+		ratio = 1 / ratio;
+	}
 
-	if (ratio > 1.0)
-		swap(&p, &q);
+	double cnt = 1.0;
+	int bpos = 0;
+	while (!equal(prev[b.x][b.y], b) && !equal(prev[s.x][s.y], s)) {
+		img[(s.x + b.x) / 2][(s.y + b.y) / 2] = 100;
 
-	while (!equal(prev[q.x][q.y], q) && !equal(prev[p.x][p.y], p)) {
-
-		for (uint8 i = 0; i < (int)ratio; i++) {
-			img[(p.x + q.x) / 2][(p.y + q.y) / 2] = 100;
-			q = prev[q.x][q.y];
+		cnt += ratio;
+		for (; bpos < (int)cnt; bpos++) {
+			b = prev[b.x][b.y];
+			img[(s.x + b.x) / 2][(s.y + b.y) / 2] = 100;
 		}
 
-		p = prev[p.x][p.y];
+		s = prev[s.x][s.y];
 	}
+	/*
+	while (!equal(prev[b.x][b.y], b) && !equal(prev[s.x][s.y], s)) {
+		for (uint8 j = 0; j < (int)(ratio + 1); j++) {
+			img[(s.x + b.x) / 2][(s.y + b.y) / 2] = 100;
+			b = prev[b.x][b.y];
+		}
+
+		s = prev[s.x][s.y];
+	}
+	*/
 }
 
 /*!
@@ -156,21 +171,28 @@ void traversal(uint8 img[][CAMERA_W]) {
 
 	while (is_valid(left_start) && is_valid(right_start)) {
 
-		if (!empty(left_end)) {
+		if (empty(left_end)) {
 			left_end =  processing(img, left_start, prev);
 			if (!empty(left_end)) {
 				gray_boundary(img, prev, left_end);
+			} else {
+				left_start.y--;
 			}
 		}
 
-		if (!empty(right_end)) {
+		if (empty(right_end)) {
 			right_end = processing(img, right_start, prev);
 			if (!empty(right_end)) {
-				gray_boundary(img, prev, left_end);
+				gray_boundary(img, prev, right_end);
+			} else {
+				right_start.y++;
 			}
 		}
 
 		if (!empty(right_end) && !empty(left_end)) {
+
+			vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
+
 			draw_mid_line(img, prev, left_end, right_end);
 			break;
 		}

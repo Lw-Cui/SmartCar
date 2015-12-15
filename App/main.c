@@ -36,9 +36,9 @@ void highlight(uint8 imgbuff[CAMERA_SIZE]) {
 
 	img_extract(img, imgbuff,CAMERA_SIZE);                //鹰眼所采集的图像为一字节8个像素点，将其解压变为一个字节1个像素点，便于上位机处
 
-	vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
+	//vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
 	traversal(img);
-	vertical_line(img);
+	//vertical_line(img);
 
 	vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
 	EnableInterrupts;
