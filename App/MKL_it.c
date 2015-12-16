@@ -46,3 +46,9 @@ void DMA0_IRQHandler()
 
 
 
+/*!
+ *  @brief      定时中断函数， 编码器
+ *  @since      v1.0
+ */
+void PIT_IRQHandler() {
+}

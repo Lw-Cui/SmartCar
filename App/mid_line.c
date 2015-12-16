@@ -41,7 +41,6 @@ void vertical_line(uint8 img[][CAMERA_W]) {
 	}
 }
 
-
 uint8 is_same_color(uint8 img[][CAMERA_W], Point p1, Point p2) {
 	return img[p1.x][p1.y] == img[p2.x][p2.y];
 }
@@ -79,9 +78,10 @@ uint16 boundary_count(Point prev[][CAMERA_W], Point end) {
  *  @return     边线的最后一点
  *  @since      v1.0
  */
+
+Point search(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) {
 #define QLEN 250
-Point queue[QLEN];
-Point processing(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) {
+	Point queue[QLEN];
 	uint16 beg = 0, end = 0;
 
 	set(&prev[position.x][position.y], position.x, position.y);
@@ -112,15 +112,13 @@ Point processing(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) 
 }
 
 /*!
- *  @brief      绘制边界
+ *  @brief      边界
  *  @param      img				二维图像数组
  *  @param      prev			前驱数组
- *  @param		s, b			两条边界起始点
+ *  @param		s, b			两条边界的终点
  *  @since      v1.0
  */
-void draw_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point s, Point b) {
-	int lenb = boundary_count(prev, b);
-	int lens = boundary_count(prev, s);
+int16 find_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point new_dir[], Point s, Point b) {
 	double ratio = (double)boundary_count(prev, b) / (double)boundary_count(prev, s);
 
 	if (ratio < 1.0) {
@@ -130,35 +128,30 @@ void draw_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point s, Point
 
 	double cnt = 1.0;
 	int bpos = 0;
-	while (!equal(prev[b.x][b.y], b) && !equal(prev[s.x][s.y], s)) {
-		img[(s.x + b.x) / 2][(s.y + b.y) / 2] = 100;
+	int16 end = 0;
 
+	while (!equal(prev[b.x][b.y], b) && !equal(prev[s.x][s.y], s)) {
 		cnt += ratio;
 		for (; bpos < (int)cnt; bpos++) {
-			b = prev[b.x][b.y];
+#ifdef _DEBUG_
 			img[(s.x + b.x) / 2][(s.y + b.y) / 2] = 100;
-		}
-
-		s = prev[s.x][s.y];
-	}
-	/*
-	while (!equal(prev[b.x][b.y], b) && !equal(prev[s.x][s.y], s)) {
-		for (uint8 j = 0; j < (int)(ratio + 1); j++) {
-			img[(s.x + b.x) / 2][(s.y + b.y) / 2] = 100;
+#endif
+			set(&new_dir[end++], (s.x + b.x) / 2, (s.y + b.y) / 2);
 			b = prev[b.x][b.y];
 		}
-
 		s = prev[s.x][s.y];
 	}
-	*/
+
+	return end;
 }
+
 
 /*!
  *  @brief      遍历最近一行，找到边界
  *  @param      img				图像数组
  *  @since      v2.0
  */
-void traversal(uint8 img[][CAMERA_W]) {
+uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 	Point prev[CAMERA_H][CAMERA_W];
 
 	for (int i = 0; i < CAMERA_H; i++)
@@ -172,7 +165,7 @@ void traversal(uint8 img[][CAMERA_W]) {
 	while (is_valid(left_start) && is_valid(right_start)) {
 
 		if (empty(left_end)) {
-			left_end =  processing(img, left_start, prev);
+			left_end =  search(img, left_start, prev);
 			if (!empty(left_end)) {
 				gray_boundary(img, prev, left_end);
 			} else {
@@ -181,7 +174,7 @@ void traversal(uint8 img[][CAMERA_W]) {
 		}
 
 		if (empty(right_end)) {
-			right_end = processing(img, right_start, prev);
+			right_end = search(img, right_start, prev);
 			if (!empty(right_end)) {
 				gray_boundary(img, prev, right_end);
 			} else {
@@ -191,11 +184,11 @@ void traversal(uint8 img[][CAMERA_W]) {
 
 		if (!empty(right_end) && !empty(left_end)) {
 
+#ifdef _DEBUG_
 			vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
-
-			draw_mid_line(img, prev, left_end, right_end);
-			break;
+#endif
+			return find_mid_line(img, prev, new_dir, left_end, right_end);
 		}
-
 	}
+	return 0;
 }

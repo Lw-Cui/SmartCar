@@ -22,12 +22,10 @@
 	SOFTWARE.
 */
 
-#ifndef MID_LINE_H
-#define MID_LINE_H
-#include "include.h"
-#include "Point.h"
-
-void vertical_line(uint8 imgaddr[][CAMERA_W]);
-uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[]);
+#ifndef _CONTROL_H_
+#define _CONTROL_H_
+#include "point.h"
+void direction(Point new_dir[], int16 len);
 
 #endif
+

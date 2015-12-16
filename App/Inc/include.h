@@ -1,11 +1,12 @@
 #ifndef __INCLUDE_H__
 #define __INCLUDE_H__
 
-#include  "common.h"
+#define _DEBUG_
 
 /*
  * Include 用户自定义的头文件
  */
+#include  "common.h"
 //#include  "MKL_BME.h"           //位操作
 #include  "MKL_wdog.h"          //看门狗
 #include  "MKL_gpio.h"          //IO口操作
