@@ -45,10 +45,27 @@ void DMA0_IRQHandler()
 }
 
 
-
 /*!
  *  @brief      定时中断函数， 编码器
  *  @since      v1.0
  */
+uint16 encode_cnt;
+
 void PIT_IRQHandler() {
+	PIT_Flag_Clear(PIT0); 
+	
+	//编码器计数获取
+	encode_cnt = tpm_pulse_get(TPM2);
+	
+	//清零
+	tpm_pulse_clean(TPM2);
+}
+
+
+/*!
+ *  @brief      获取编码器计数
+ *  @since      v1.0
+ */
+uint16 get_encode_cnt() {
+	return encode_cnt;
 }

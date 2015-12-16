@@ -56,6 +56,13 @@ void init_interrupt() {
     set_vector_handler(PIT_VECTORn, PIT_IRQHandler);
     enable_irq(PIT_IRQn);
 
+ /*注意：电机和舵机必须为不同的TPM模块！！！！*****/
+    tpm_pwm_init(TPM0,TPM_CH0,20000,0);//初始化舵机，SD5频率为50Hz，S3010频率为300Hz，MID宏定义，为舵机占空比中值，不同的舵机中值不一样，自己调
+    tpm_pwm_init(TPM0,TPM_CH1,20000,0);
+    
+    tpm_pwm_init(TPM1,TPM_CH1, 50, 0);//舵机
+    tpm_pulse_init(TPM2,TPM_CLKIN0,TPM_PS_1);//B16右电机
+
 	EnableInterrupts;
 }
 

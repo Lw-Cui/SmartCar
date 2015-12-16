@@ -25,6 +25,15 @@
 #include "common.h"
 #include "point.h"
 #include "control.h"
+#include "MKL_it.h"
 
 void direction(Point new_dir[], int16 len) {
+	tpm_pwm_duty(TPM0,TPM_CH0, 100);
+	tpm_pwm_duty(TPM0,TPM_CH1,0);
+
+	if (new_dir[len - 1].x > new_dir[0].x) {
+		tpm_pwm_duty(TPM1,TPM_CH1, 650); 
+	} else {
+		tpm_pwm_duty(TPM1,TPM_CH1, 790); 
+	}
 }

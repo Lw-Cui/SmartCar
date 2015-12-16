@@ -31,4 +31,6 @@ void PORTA_IRQHandler();
 void DMA0_IRQHandler();
 void PIT_IRQHandler();
 
+uint16 get_encode_cnt();
+
 #endif  //__MK60_IT_H__
