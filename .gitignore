@@ -9,6 +9,7 @@ settings/
 FIRE_KL.eww
 *.c~
 *.h~
+*.swp
 
 # Object files
 *.o
