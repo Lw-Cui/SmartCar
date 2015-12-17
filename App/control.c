@@ -33,6 +33,11 @@
  *  @param      new_dir		中线数组
  *  @param      len			数组长度
  *  @since      v1.0
+ *	@reference
+		tpm_pwm_duty(TPM1,TPM_CH0,320);
+
+		tpm_pwm_duty(TPM0,TPM_CH0,50);	
+		tpm_pwm_duty(TPM0,TPM_CH1, 0);
  */
 void direction(Point new_dir[], int16 len) {
 	tpm_pwm_duty(TPM0,TPM_CH0, 100);
