@@ -26,5 +26,18 @@
 #include "point.h"
 #include "control.h"
 
+
+/*!
+ *  @brief      确定方向
+ *  @param      new_dir		中线数组
+ *  @param      len			数组长度
+ *  @since      v1.0
+ */
 void direction(Point new_dir[], int16 len) {
+ 
+	if (new_dir[len - 1].x > new_dir[0].x) {
+		tpm_pwm_duty(TPM1,TPM_CH0, 35);  
+	} else {
+		tpm_pwm_duty(TPM1,TPM_CH0, 47); 
+	}
 }

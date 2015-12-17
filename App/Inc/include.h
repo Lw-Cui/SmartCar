@@ -1,7 +1,7 @@
 #ifndef __INCLUDE_H__
 #define __INCLUDE_H__
 
-#define _DEBUG_
+//#define _DEBUG_
 
 /*
  * Include 用户自定义的头文件
