@@ -14,11 +14,6 @@
  * @date       2013-12-14
  */
 
-/*
- * include.h 中需要注释掉 MKL_BME.h
- * 33% - 42.5% - 55% int 舵机占空比
- *
- */
 #include "include.h"
 #include "MKL_it.h"
 #include "camera.h"
@@ -36,7 +31,7 @@ void processing(uint8 imgbuff[]) {
 	DisableInterrupts;
 	uint8 img[CAMERA_H][CAMERA_W];
 #define LEN 255
-	Point new_dir[LEN], dir[LEN];
+	Point new_dir[LEN];
 
 	img_extract(img, imgbuff,CAMERA_SIZE);                //鹰眼所采集的图像为一字节8个像素点，将其解压变为一个字节1个像素点，便于上位机处
 
@@ -54,31 +49,33 @@ void processing(uint8 imgbuff[]) {
 
 void init_interrupt() {
 	DisableInterrupts; 
-       
+	
     tpm_pwm_init(TPM0,TPM_CH0,20000,0);//初始化舵机，SD5频率为50Hz，S3010频率为300Hz，MID宏定义，为舵机占空比中值，不同的舵机中值不一样，自己调
     tpm_pwm_init(TPM0,TPM_CH1,20000,0);
     tpm_pwm_init(TPM1,TPM_CH0,50,700);//舵机，PTE21
+	
 
     set_vector_handler(PORTA_VECTORn ,PORTA_IRQHandler);    //设置PORTA的中断服务函数为 PORTA_IRQHandler
     set_vector_handler(DMA0_VECTORn ,DMA0_IRQHandler);      //设置DMA0的中断服务函数为 PORTA_IRQHandler
 
-    pit_init_ms(PIT0, 5);
+	/*
+    pit_init_ms(PIT0, 25);
     set_vector_handler(PIT_VECTORn, PIT_IRQHandler);
     enable_irq(PIT_IRQn);
+	*/
 
 	EnableInterrupts;
 }
 
 void  main(void)
-{
+{       
 	uint8 imgbuff[CAMERA_SIZE];
-    camera_init(imgbuff);           
+	camera_init(imgbuff);  
 
 	init_interrupt();
-
+          
     while(1)
     {
-      
 		camera_get_img();                                     //在while(1)中不断使能PORTA，使得摄像头采集图像的信号到来后，就可以触发PORTA
 		extern volatile IMG_STATUS_e ov7725_eagle_img_flag;
 		if (ov7725_eagle_img_flag == IMG_FINISH)

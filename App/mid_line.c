@@ -29,8 +29,8 @@
 
 
 #define LEN 8
-int8 XTRAV[LEN] = { 1,  0, -1,  1, -1,  1,  0, -1};
-int8 YTRAV[LEN] = {-1, -1, -1,  0,  0,  1,  1,  1};
+static int8 XTRAV[LEN] = { 1,  0, -1,  1, -1,  1,  0, -1};
+static int8 YTRAV[LEN] = {-1, -1, -1,  0,  0,  1,  1,  1};
 
 /* Vertical line */
 void vertical_line(uint8 img[][CAMERA_W]) {
