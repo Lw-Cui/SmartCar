@@ -133,15 +133,16 @@ int16 find_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point new_dir
 	while (!equal(prev[b.x][b.y], b) && !equal(prev[s.x][s.y], s)) {
 		cnt += ratio;
 		for (; bpos < (int)cnt; bpos++) {
-#ifdef _DEBUG_
-			img[(s.x + b.x) / 2][(s.y + b.y) / 2] = 100;
-#endif
+
 			set(&new_dir[end++], (s.x + b.x) / 2, (s.y + b.y) / 2);
 			b = prev[b.x][b.y];
 		}
 		s = prev[s.x][s.y];
 	}
 
+        for (int i = end / 2; i != end; i++)
+            img[new_dir[i].x][new_dir[i].y] = 100;
+          
 	return end;
 }
 

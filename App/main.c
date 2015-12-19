@@ -42,10 +42,12 @@ void processing(uint8 imgbuff[]) {
 				black_cnt++;
 	while (black_cnt > CAMERA_H * CAMERA_W * 0.9) ;
 
+        
 	int len;
 	if (len = traversal(img, new_dir))
 		direction(new_dir, len);
 
+        
 #ifdef _DEBUG_
 	vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
 #endif
