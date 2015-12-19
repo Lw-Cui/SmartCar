@@ -35,6 +35,13 @@ void processing(uint8 imgbuff[]) {
 
 	img_extract(img, imgbuff,CAMERA_SIZE);                //鹰眼所采集的图像为一字节8个像素点，将其解压变为一个字节1个像素点，便于上位机处
 
+	int black_cnt = 0;
+	for (int i = 0; i < CAMERA_H; i++)
+		for (int j = 0; j < CAMERA_W; j++)
+			if (img[i][j] == 0)
+				black_cnt++;
+	while (black_cnt > CAMERA_H * CAMERA_W * 0.9) ;
+
 	int len;
 	if (len = traversal(img, new_dir))
 		direction(new_dir, len);
