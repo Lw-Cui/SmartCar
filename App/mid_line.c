@@ -101,7 +101,7 @@ Point search(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) {
 				queue[end++] = np;
 				end %= QLEN;
 
-				if (terminal(np))
+				if (terminal(np) && abs(np.x - position.x) > 3)
 					return np;
 			}
 		}
@@ -140,8 +140,8 @@ int16 find_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point new_dir
 		s = prev[s.x][s.y];
 	}
 
-        for (int i = end / 2; i != end; i++)
-            img[new_dir[i].x][new_dir[i].y] = 100;
+	for (int i = end / 2; i != end; i++)
+		img[new_dir[i].x][new_dir[i].y] = 100;
           
 	return end;
 }
@@ -170,7 +170,10 @@ uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 			if (!empty(left_end)) {
 				gray_boundary(img, prev, left_end);
 			} else {
-				left_start.y--;
+				if (left_start.y != 0)
+					left_start.y--;
+				else
+					left_start.x--;
 			}
 		}
 
@@ -179,14 +182,17 @@ uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 			if (!empty(right_end)) {
 				gray_boundary(img, prev, right_end);
 			} else {
-				right_start.y++;
+				if (right_start.y != CAMERA_W - 1)
+					right_start.y++;
+				else
+					right_start.x--;
 			}
 		}
 
 		if (!empty(right_end) && !empty(left_end)) {
 
 #ifdef _DEBUG_
-			vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
+			vcan_sendimg(img, CAMERA_H, CAMERA_W);
 #endif
 			return find_mid_line(img, prev, new_dir, left_end, right_end);
 		}
