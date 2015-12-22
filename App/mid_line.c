@@ -101,7 +101,7 @@ Point search(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) {
 				queue[end++] = np;
 				end %= QLEN;
 
-				if (terminal(np) && abs(np.x - position.x) > 3)
+				if (terminal(np) && abs(np.x - position.x) > 5)
 					return np;
 			}
 		}
@@ -146,9 +146,16 @@ int16 find_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point new_dir
 	return end;
 }
 
-
 /*!
  *  @brief      遍历最近一行，找到边界
+ *  @param      img				图像数组
+ *  @since      v2.0
+ */
+void special_boundary() {
+}
+
+/*!
+ *  @brief      遍历，找到边界
  *  @param      img				图像数组
  *  @since      v2.0
  */
@@ -190,12 +197,26 @@ uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 		}
 
 		if (!empty(right_end) && !empty(left_end)) {
-
 #ifdef _DEBUG_
 			vcan_sendimg(img, CAMERA_H, CAMERA_W);
 #endif
 			return find_mid_line(img, prev, new_dir, left_end, right_end);
 		}
 	}
-	return 0;
+
+	if (is_valid(right_start)) {
+		set(&left_start, CAMERA_H - 1, 0);
+		set(&left_end, CAMERA_H - 2, 0);
+		prev[left_end.x][left_end.y] = left_start;
+		return find_mid_line(img, prev, new_dir, left_end, right_end);
+
+	} else if (is_valid(left_start)) {
+		set(&right_start, CAMERA_H - 1, CAMERA_W - 1);
+		set(&right_end, CAMERA_H - 2, CAMERA_W - 1);
+		prev[right_end.x][right_end.y] = right_start;
+		return find_mid_line(img, prev, new_dir, left_end, right_end);
+
+	} else {
+		return 0;
+	}
 }

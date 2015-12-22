@@ -40,14 +40,16 @@ void processing(uint8 imgbuff[]) {
 		for (int j = 0; j < CAMERA_W; j++)
 			if (img[i][j] == 0)
 				black_cnt++;
-	while (black_cnt > CAMERA_H * CAMERA_W * 0.9) ;
+	while (black_cnt > CAMERA_H * CAMERA_W * 0.9) {
+		tpm_pwm_duty(TPM1,TPM_CH0, MID);
 
+		tpm_pwm_duty(TPM0,TPM_CH0, 0);
+		tpm_pwm_duty(TPM0,TPM_CH1, 0);
+	}
         
 	int len;
 	if (len = traversal(img, new_dir))
 		direction(new_dir, len);
-
-        
 #ifdef _DEBUG_
 	vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
 #endif
@@ -61,9 +63,9 @@ void init_interrupt() {
 	
     tpm_pwm_init(TPM0,TPM_CH0,20000,0);//初始化舵机，SD5频率为50Hz，S3010频率为300Hz，MID宏定义，为舵机占空比中值，不同的舵机中值不一样，自己调
     tpm_pwm_init(TPM0,TPM_CH1,20000,0);
-    tpm_pwm_init(TPM1,TPM_CH0,50,700);//舵机，PTE21
-	
+    tpm_pwm_init(TPM1,TPM_CH0,200,MID);//舵机，PTA12      
 
+    
     set_vector_handler(PORTA_VECTORn ,PORTA_IRQHandler);    //设置PORTA的中断服务函数为 PORTA_IRQHandler
     set_vector_handler(DMA0_VECTORn ,DMA0_IRQHandler);      //设置DMA0的中断服务函数为 PORTA_IRQHandler
 
@@ -82,12 +84,9 @@ void  main(void)
 	camera_init(imgbuff);  
 
 	init_interrupt();
-          
     while(1)
     {
 		camera_get_img();                                     //在while(1)中不断使能PORTA，使得摄像头采集图像的信号到来后，就可以触发PORTA
-		extern volatile IMG_STATUS_e ov7725_eagle_img_flag;
-		if (ov7725_eagle_img_flag == IMG_FINISH)
-			processing(imgbuff);
+		processing(imgbuff);
     }   
 }
