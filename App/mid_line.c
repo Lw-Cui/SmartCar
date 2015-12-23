@@ -174,9 +174,7 @@ uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 
 		if (empty(left_end)) {
 			left_end =  search(img, left_start, prev);
-			if (!empty(left_end)) {
-				gray_boundary(img, prev, left_end);
-			} else {
+			if (empty(left_end)) {
 				if (left_start.y != 0)
 					left_start.y--;
 				else
@@ -186,9 +184,7 @@ uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 
 		if (empty(right_end)) {
 			right_end = search(img, right_start, prev);
-			if (!empty(right_end)) {
-				gray_boundary(img, prev, right_end);
-			} else {
+			if (empty(right_end)) {
 				if (right_start.y != CAMERA_W - 1)
 					right_start.y++;
 				else
@@ -196,27 +192,36 @@ uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 			}
 		}
 
-		if (!empty(right_end) && !empty(left_end)) {
-#ifdef _DEBUG_
-			vcan_sendimg(img, CAMERA_H, CAMERA_W);
-#endif
-			return find_mid_line(img, prev, new_dir, left_end, right_end);
-		}
+		if (!empty(right_end) && !empty(left_end))
+			break;
+
+		if (left_start.x < CAMERA_H / 2 || right_start.x < CAMERA_H / 2)
+			break;
 	}
 
-	if (is_valid(right_start)) {
+	int len = 0;
+	if (!empty(right_end) && !empty(left_end)) {
+		len = find_mid_line(img, prev, new_dir, left_end, right_end);
+	} else if (!empty(right_end)) {
 		set(&left_start, CAMERA_H - 1, 0);
 		set(&left_end, CAMERA_H - 2, 0);
 		prev[left_end.x][left_end.y] = left_start;
-		return find_mid_line(img, prev, new_dir, left_end, right_end);
+		len = find_mid_line(img, prev, new_dir, left_end, right_end);
 
-	} else if (is_valid(left_start)) {
+	} else if (!empty(left_end)) {
 		set(&right_start, CAMERA_H - 1, CAMERA_W - 1);
 		set(&right_end, CAMERA_H - 2, CAMERA_W - 1);
 		prev[right_end.x][right_end.y] = right_start;
-		return find_mid_line(img, prev, new_dir, left_end, right_end);
-
+		len = find_mid_line(img, prev, new_dir, left_end, right_end);
 	} else {
-		return 0;
+		len = 0;
 	}
+
+#ifndef _CAMERA_
+	if (len > 0) {
+		gray_boundary(img, prev, right_end);
+		gray_boundary(img, prev, left_end);
+	}
+#endif
+	return len;
 }

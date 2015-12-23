@@ -42,18 +42,18 @@ int16 get_offset(Point start, Point end) {
 		tanx = tan30;
 
 	if (end.y < start.y)
-		return tanx / tan30 * 70 * -1;
+		return tanx / tan30 * OFFSET * -1;
 	else
-		return tanx / tan30 * 70;
+		return tanx / tan30 * OFFSET;
 }
 */
 int16 get_offset(Point start, Point end) {
-	double k = 4.3;
+	double k = 3.0;
 	int16 offset = (end.y - start.y) * k;
 	if (offset > 0)
-		return fmin(70, offset);
+		return fmin(OFFSET, offset);
 	else
-		return fmax(-70, offset);
+		return fmax(-OFFSET, offset);
 }
 
 /*!
@@ -90,7 +90,7 @@ int16 get_velocity(int16 offset, int16 velocity) {
 }
 */
 int16 get_velocity(int16 offset, int16 velocity) {
-#define VINIT 170
+#define VINIT 300
 	return VINIT;
 }
 
@@ -123,13 +123,16 @@ void direction(Point new_dir[], int16 len) {
 
 		offset = get_offset(start, end);
 		velocity = get_velocity(offset, velocity);
-	}
-	tpm_pwm_duty(TPM1,TPM_CH0, MID + offset);
 
-#ifdef _DEBUG_
-	tpm_pwm_duty(TPM0,TPM_CH0, 0);
+		tpm_pwm_duty(TPM1,TPM_CH0, MID + offset);
+	} else {
+		tpm_pwm_duty(TPM1,TPM_CH0, MID);
+	}
+
+#ifndef _MOTO_
+		tpm_pwm_duty(TPM0,TPM_CH0, 0);
 #else
-	tpm_pwm_duty(TPM0,TPM_CH0, velocity);
+		tpm_pwm_duty(TPM0,TPM_CH0, velocity);
 #endif
-	tpm_pwm_duty(TPM0,TPM_CH1,0);
+		tpm_pwm_duty(TPM0,TPM_CH1,0);
 }

@@ -50,7 +50,7 @@ void processing(uint8 imgbuff[]) {
 	int len;
 	if (len = traversal(img, new_dir))
 		direction(new_dir, len);
-#ifdef _DEBUG_
+#ifndef _CAMERA_
 	vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
 #endif
 

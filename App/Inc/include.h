@@ -1,7 +1,11 @@
 #ifndef __INCLUDE_H__
 #define __INCLUDE_H__
 
-#define _DEBUG_
+/*
+ * 定义宏代表打开相应功能
+ */
+//#define _MOTO_
+//#define _CAMERA_
 
 /*
  * Include 用户自定义的头文件
