@@ -52,6 +52,8 @@ uint8 is_same_color(uint8 img[][CAMERA_W], Point p1, Point p2) {
  *  @since      v1.0
  */
 void gray_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point end) {
+	if (empty(end))
+		return;
 	for (; !equal(prev[end.x][end.y], end); end = prev[end.x][end.y])
 		img[end.x][end.y] = 150;
 }
@@ -64,6 +66,8 @@ void gray_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point end) {
  *  @since      v1.0
  */
 uint16 boundary_count(Point prev[][CAMERA_W], Point end) {
+	if (empty(end))
+		return 0;
 	uint16 cnt = 0;
 	for (; !equal(prev[end.x][end.y], end); end = prev[end.x][end.y])
 		cnt++;
@@ -119,17 +123,17 @@ Point search(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) {
  *  @since      v1.0
  */
 int16 find_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point new_dir[], Point s, Point b) {
-	double ratio = (double)boundary_count(prev, b) / (double)boundary_count(prev, s);
+	if (empty(s) || empty(b))
+		return 0;
 
+	double ratio = (double)boundary_count(prev, b) / (double)boundary_count(prev, s);
 	if (ratio < 1.0) {
 		swap(&s, &b);
 		ratio = 1 / ratio;
 	}
 
 	double cnt = 1.0;
-	int bpos = 0;
-	int16 end = 0;
-
+	int bpos = 0, end = 0;
 	while (!equal(prev[b.x][b.y], b) && !equal(prev[s.x][s.y], s)) {
 		cnt += ratio;
 		for (; bpos < (int)cnt; bpos++) {
@@ -140,18 +144,46 @@ int16 find_mid_line(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point new_dir
 		s = prev[s.x][s.y];
 	}
 
+#ifdef _SEND_
 	for (int i = end / 2; i != end; i++)
 		img[new_dir[i].x][new_dir[i].y] = 100;
-          
+#endif
 	return end;
 }
 
 /*!
- *  @brief      遍历最近一行，找到边界
- *  @param      img				图像数组
- *  @since      v2.0
+ *  @brief      人工边界
+ *  @param      prev	回溯数组
+ *  @param      start	起始点
+ *  @param      end		终点
+ *  @since      v1.0
  */
-void special_boundary() {
+void set_boundary(Point prev[][CAMERA_W], Point *start,
+		Point *end, int8 ypos) {
+	set(start, CAMERA_H - 1, ypos);
+	set(end, CAMERA_H - 2, ypos);
+	prev[end->x][end->y] = prev[start->x][start->y] = *start;
+}
+
+/*!
+ *  @brief      查找边界的驱动函数
+ *  @param		img		图像处理
+ *  @param      prev	回溯数组
+ *  @param      start	起始点
+ *  @param      end		终点
+ *  @since      v1.0
+ */
+void find_boudary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W],
+		Point *start, Point *end, int offset) {
+	if (empty(*end)) {
+		*end =  search(img, *start, prev);
+		if (empty(*end)) {
+			if (start->y != 0)
+				start->y += offset;
+			else
+				start->x--;
+		}
+	}
 }
 
 /*!
@@ -170,58 +202,23 @@ uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 	Point right_start = {CAMERA_H - 1, CAMERA_W / 2};
 	Point left_end = {EMPTY, EMPTY}, right_end = {EMPTY, EMPTY};
 
-	while (is_valid(left_start) && is_valid(right_start)) {
-
-		if (empty(left_end)) {
-			left_end =  search(img, left_start, prev);
-			if (empty(left_end)) {
-				if (left_start.y != 0)
-					left_start.y--;
-				else
-					left_start.x--;
-			}
-		}
-
-		if (empty(right_end)) {
-			right_end = search(img, right_start, prev);
-			if (empty(right_end)) {
-				if (right_start.y != CAMERA_W - 1)
-					right_start.y++;
-				else
-					right_start.x--;
-			}
-		}
+	while (left_start.x > CAMERA_H / 2 && right_start.x > CAMERA_H / 2) {
+		find_boudary(img, prev, &left_start, &left_end, -1);
+		find_boudary(img, prev, &right_start, &right_end, 1);
 
 		if (!empty(right_end) && !empty(left_end))
 			break;
-
-		if (left_start.x < CAMERA_H / 2 || right_start.x < CAMERA_H / 2)
-			break;
 	}
 
-	int len = 0;
-	if (!empty(right_end) && !empty(left_end)) {
-		len = find_mid_line(img, prev, new_dir, left_end, right_end);
-	} else if (!empty(right_end)) {
-		set(&left_start, CAMERA_H - 1, 0);
-		set(&left_end, CAMERA_H - 2, 0);
-		prev[left_end.x][left_end.y] = left_start;
-		len = find_mid_line(img, prev, new_dir, left_end, right_end);
+	if (empty(left_end))
+		set_boundary(prev, &left_start, &left_end, 0);
 
-	} else if (!empty(left_end)) {
-		set(&right_start, CAMERA_H - 1, CAMERA_W - 1);
-		set(&right_end, CAMERA_H - 2, CAMERA_W - 1);
-		prev[right_end.x][right_end.y] = right_start;
-		len = find_mid_line(img, prev, new_dir, left_end, right_end);
-	} else {
-		len = 0;
-	}
+	if (empty(right_end))
+		set_boundary(prev, &right_start, &right_end, CAMERA_W - 1);
 
-#ifndef _CAMERA_
-	if (len > 0) {
-		gray_boundary(img, prev, right_end);
-		gray_boundary(img, prev, left_end);
-	}
+#ifdef _SEND_
+	gray_boundary(img, prev, right_end);
+	gray_boundary(img, prev, left_end);
 #endif
-	return len;
+	return find_mid_line(img, prev, new_dir, left_end, right_end);
 }

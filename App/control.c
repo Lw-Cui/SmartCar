@@ -48,7 +48,7 @@ int16 get_offset(Point start, Point end) {
 }
 */
 int16 get_offset(Point start, Point end) {
-	double k = 3.0;
+	double k = 5.0;
 	int16 offset = (end.y - start.y) * k;
 	if (offset > 0)
 		return fmin(OFFSET, offset);
@@ -90,7 +90,7 @@ int16 get_velocity(int16 offset, int16 velocity) {
 }
 */
 int16 get_velocity(int16 offset, int16 velocity) {
-#define VINIT 300
+#define VINIT 200
 	return VINIT;
 }
 
@@ -106,6 +106,8 @@ int16 get_velocity(int16 offset, int16 velocity) {
 		电机占空比 int 1000
 		tpm_pwm_duty(TPM0,TPM_CH0,50);	
 		tpm_pwm_duty(TPM0,TPM_CH1, 0);
+
+		new_dir[len - 1].x -> new_dir[0].x from big to small
  */
 
 void direction(Point new_dir[], int16 len) {
@@ -115,10 +117,11 @@ void direction(Point new_dir[], int16 len) {
 	
 #define LEN 20
 	if (len > LEN || empty(start) || empty(end)) {
-		set(&start, new_dir[len - 1].x, (new_dir[len - 1].y + CAMERA_W / 2) / 2);
+		set(&start, new_dir[0].x, (new_dir[0].y + CAMERA_W / 2) / 2);
+		//set(&start, new_dir[0].x, new_dir[0].y);
 
-		int end_x = new_dir[len / 4].x * 0.3 + new_dir[len / 2].x * 0.7;
-		int end_y = new_dir[len / 4].y * 0.3 + new_dir[len / 2].y * 0.7;
+		int end_x = new_dir[len * 3 / 4].x * 0.0 + new_dir[len / 2].x * 1.0;
+		int end_y = new_dir[len * 3 / 4].y * 0.0 + new_dir[len / 2].y * 1.0;
 		set(&end, end_x, end_y);
 
 		offset = get_offset(start, end);
@@ -129,10 +132,10 @@ void direction(Point new_dir[], int16 len) {
 		tpm_pwm_duty(TPM1,TPM_CH0, MID);
 	}
 
-#ifndef _MOTO_
-		tpm_pwm_duty(TPM0,TPM_CH0, 0);
+#ifdef _MOTO_
+	tpm_pwm_duty(TPM0,TPM_CH0, velocity);
 #else
-		tpm_pwm_duty(TPM0,TPM_CH0, velocity);
+	tpm_pwm_duty(TPM0,TPM_CH0, 0);
 #endif
-		tpm_pwm_duty(TPM0,TPM_CH1,0);
+	tpm_pwm_duty(TPM0,TPM_CH1,0);
 }
