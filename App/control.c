@@ -47,13 +47,26 @@ int16 get_offset(Point start, Point end) {
 		return tanx / tan30 * OFFSET;
 }
 */
-int16 get_offset(Point start, Point end) {
-	double k = 5.0;
-	int16 offset = (end.y - start.y) * k;
+#define MAX_LEN 100
+#define MIN_LEN 20
+#define K 3.5
+int16 get_offset(Point new_dir[], int len) {
+	Point start = {EMPTY, EMPTY}, end = {EMPTY, EMPTY};
+	int offset = 0; 
+
+	if (len > MAX_LEN) {
+		offset = new_dir[MAX_LEN / 2].y - new_dir[0].y;
+	} else if (len < MIN_LEN) {
+		offset = 0;
+	} else {
+		offset = new_dir[len / 2].y - new_dir[0].y;
+		offset *= (double)MAX_LEN / len;
+	}
+
 	if (offset > 0)
-		return fmin(OFFSET, offset);
+		return fmin(OFFSET, offset * K);
 	else
-		return fmax(-OFFSET, offset);
+		return fmax(-OFFSET, offset * K);
 }
 
 /*!
@@ -89,8 +102,8 @@ int16 get_velocity(int16 offset, int16 velocity) {
 	}
 }
 */
-int16 get_velocity(int16 offset, int16 velocity) {
 #define VINIT 200
+int16 get_velocity() {
 	return VINIT;
 }
 
@@ -101,41 +114,28 @@ int16 get_velocity(int16 offset, int16 velocity) {
  *  @since      v1.0
  *	@reference
 		tpm_pwm_duty(TPM1,TPM_CH0,320);
-		舵机占空比 int 272 - 342 - 412
 
 		电机占空比 int 1000
 		tpm_pwm_duty(TPM0,TPM_CH0,50);	
 		tpm_pwm_duty(TPM0,TPM_CH1, 0);
-
-		new_dir[len - 1].x -> new_dir[0].x from big to small
  */
 
-void direction(Point new_dir[], int16 len) {
-	static Point start = {EMPTY, EMPTY}, end = {EMPTY, EMPTY};
+void direction(uint8 img[][CAMERA_W], Point new_dir[], int16 len) {
 	static int velocity = VINIT;
-	int offset = 0;
+	int offset = get_offset(new_dir, len);
 	
-#define LEN 20
-	if (len > LEN || empty(start) || empty(end)) {
-		set(&start, new_dir[0].x, (new_dir[0].y + CAMERA_W / 2) / 2);
-		//set(&start, new_dir[0].x, new_dir[0].y);
-
-		int end_x = new_dir[len * 3 / 4].x * 0.0 + new_dir[len / 2].x * 1.0;
-		int end_y = new_dir[len * 3 / 4].y * 0.0 + new_dir[len / 2].y * 1.0;
-		set(&end, end_x, end_y);
-
-		offset = get_offset(start, end);
-		velocity = get_velocity(offset, velocity);
-
-		tpm_pwm_duty(TPM1,TPM_CH0, MID + offset);
-	} else {
-		tpm_pwm_duty(TPM1,TPM_CH0, MID);
-	}
+	tpm_pwm_duty(TPM1,TPM_CH0, MID + offset);
+	velocity = get_velocity();
+	tpm_pwm_duty(TPM0,TPM_CH1,0);
 
 #ifdef _MOTO_
 	tpm_pwm_duty(TPM0,TPM_CH0, velocity);
 #else
 	tpm_pwm_duty(TPM0,TPM_CH0, 0);
 #endif
-	tpm_pwm_duty(TPM0,TPM_CH1,0);
+
+#ifdef _SEND_
+	for (int i = 0; i < abs(offset); i++)
+		img[CAMERA_H - 1][i] = 0;
+#endif
 }

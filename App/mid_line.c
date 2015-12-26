@@ -116,6 +116,17 @@ Point search(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) {
 }
 
 /*!
+ *  @brief      将数组逆序
+ *  @param		new_dir		目标数组
+ *  @param		len			数组长度
+ *  @since      v1.0
+ */
+void reverse(Point new_dir[], int len) {
+	for (int i = 0; i < len / 2; i++)
+		swap(&new_dir[i], &new_dir[len - i - 1]);
+}
+
+/*!
  *  @brief      边界
  *  @param      img				二维图像数组
  *  @param      prev			前驱数组
@@ -174,11 +185,11 @@ void set_boundary(Point prev[][CAMERA_W], Point *start,
  *  @since      v1.0
  */
 void find_boudary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W],
-		Point *start, Point *end, int offset) {
+		Point *start, Point *end, int limit, int offset) {
 	if (empty(*end)) {
 		*end =  search(img, *start, prev);
 		if (empty(*end)) {
-			if (start->y != 0)
+			if (start->y != limit)
 				start->y += offset;
 			else
 				start->x--;
@@ -203,8 +214,8 @@ uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 	Point left_end = {EMPTY, EMPTY}, right_end = {EMPTY, EMPTY};
 
 	while (left_start.x > CAMERA_H / 2 && right_start.x > CAMERA_H / 2) {
-		find_boudary(img, prev, &left_start, &left_end, -1);
-		find_boudary(img, prev, &right_start, &right_end, 1);
+		find_boudary(img, prev, &left_start, &left_end, 0, -1);
+		find_boudary(img, prev, &right_start, &right_end, CAMERA_W - 1, 1);
 
 		if (!empty(right_end) && !empty(left_end))
 			break;
