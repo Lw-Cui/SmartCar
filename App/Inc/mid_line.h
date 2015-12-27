@@ -27,7 +27,6 @@
 #include "include.h"
 #include "Point.h"
 
-void vertical_line(uint8 imgaddr[][CAMERA_W]);
-uint8 traversal(uint8 img[][CAMERA_W], Point new_dir[]);
+uint8 direction(uint8 img[][CAMERA_W], Point new_dir[]);
 
 #endif

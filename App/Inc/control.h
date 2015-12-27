@@ -26,8 +26,7 @@
 #define _CONTROL_H_
 #include "point.h"
 #define MID 312
-#define OFFSET 48
-void direction(uint8 img[][CAMERA_W], Point new_dir[], int16 len);
+void adjustment(uint8 img[][CAMERA_W], Point new_dir[], int16 len);
 
 #endif
 

@@ -22,71 +22,48 @@
 #include "control.h"
 
 /*!
- *  @brief      处理函数
- *  @param      imgbuff		图像缓冲区
+ *  @brief      中断初始化
  *  @since      v1.0
+ *  @cheatsheet
+
+    pit_init_ms(PIT0, 25);
+    set_vector_handler(PIT_VECTORn, PIT_IRQHandler);
+    enable_irq(PIT_IRQn);
  */
-
-void processing(uint8 imgbuff[]) {
-	DisableInterrupts;
-	uint8 img[CAMERA_H][CAMERA_W];
-#define LEN 255
-	Point new_dir[LEN];
-
-	img_extract(img, imgbuff,CAMERA_SIZE);                //鹰眼所采集的图像为一字节8个像素点，将其解压变为一个字节1个像素点，便于上位机处
-
-	int black_cnt = 0;
-	for (int i = 0; i < CAMERA_H; i++)
-		for (int j = 0; j < CAMERA_W; j++)
-			if (img[i][j] == 0)
-				black_cnt++;
-	while (black_cnt > CAMERA_H * CAMERA_W * 0.9) {
-		tpm_pwm_duty(TPM1,TPM_CH0, MID);
-
-		tpm_pwm_duty(TPM0,TPM_CH0, 0);
-		tpm_pwm_duty(TPM0,TPM_CH1, 0);
-	}
-        
-	int len;
-	if (len = traversal(img, new_dir))
-		direction(img, new_dir, len);
-#ifdef _SEND_
-	vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
-#endif
-
-	EnableInterrupts;
-}
-
-
 void init_interrupt() {
 	DisableInterrupts; 
 	
-    tpm_pwm_init(TPM0,TPM_CH0,20000,0);//初始化舵机，SD5频率为50Hz，S3010频率为300Hz，MID宏定义，为舵机占空比中值，不同的舵机中值不一样，自己调
-    tpm_pwm_init(TPM0,TPM_CH1,20000,0);
-    tpm_pwm_init(TPM1,TPM_CH0,200,MID);//舵机，PTA12      
+    tpm_pwm_init(TPM0,TPM_CH0,20000, 0);
+    tpm_pwm_init(TPM0,TPM_CH1,20000, 0);
 
+    tpm_pwm_init(TPM1,TPM_CH0,200, MID);//舵机，PTA12      
     
     set_vector_handler(PORTA_VECTORn ,PORTA_IRQHandler);    //设置PORTA的中断服务函数为 PORTA_IRQHandler
     set_vector_handler(DMA0_VECTORn ,DMA0_IRQHandler);      //设置DMA0的中断服务函数为 PORTA_IRQHandler
 
-	/*
-    pit_init_ms(PIT0, 25);
-    set_vector_handler(PIT_VECTORn, PIT_IRQHandler);
-    enable_irq(PIT_IRQn);
-	*/
-
 	EnableInterrupts;
 }
 
-void  main(void)
-{       
+/*!
+ *  @brief      主函数，进行总体控制
+ *  @since      v1.0
+ */
+
+#define LEN 255
+void main() {       
 	uint8 imgbuff[CAMERA_SIZE];
 	camera_init(imgbuff);  
-
 	init_interrupt();
-    while(1)
-    {
-		camera_get_img();                                     //在while(1)中不断使能PORTA，使得摄像头采集图像的信号到来后，就可以触发PORTA
-		processing(imgbuff);
+
+	uint8 img[CAMERA_H][CAMERA_W];
+	Point new_dir[LEN];
+
+    while(1) {
+		camera_get_img();
+		img_extract(img, imgbuff,CAMERA_SIZE);
+		adjustment(img, new_dir, direction(img, new_dir));
+#ifdef _SEND_
+		vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
+#endif
     }   
 }

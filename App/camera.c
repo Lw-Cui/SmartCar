@@ -15,7 +15,6 @@
  */
 #include "camera.h"
 
-
 void img_extract(uint8 dist[][CAMERA_W], uint8 src[CAMERA_SIZE], uint32 srclen)
 {
     uint8 colour[2] = {255, 0}; 
@@ -36,7 +35,6 @@ void img_extract(uint8 dist[][CAMERA_W], uint8 src[CAMERA_SIZE], uint32 srclen)
         *dst++ = colour[ (tmpsrc >> 0 ) & 0x01 ];
     }
 }
-
 
 void vcan_sendimg(uint8 imgaddr[][CAMERA_W], uint32 height, uint32 width)
 {
