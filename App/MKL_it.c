@@ -16,14 +16,19 @@
 
 #include "MKL_it.h"
 #include "include.h"
+#include "include.h"
+#include "MKL_it.h"
+#include "camera.h"
+#include "mid_line.h"
+#include "point.h"
+#include "control.h"
 
 /*!
  *  @brief      PORTA中断服务函数
  *  @since      v5.0
  */
 
-void PORTA_IRQHandler()
-{
+void PORTA_IRQHandler() {
     uint8  n = 0;    //引脚号
     uint32 flag = PORTA_ISFR;
     PORTA_ISFR  = ~0;                                   //清中断标志位
@@ -39,8 +44,7 @@ void PORTA_IRQHandler()
  *  @brief      DMA0中断服务函数
  *  @since      v5.0
  */
-void DMA0_IRQHandler()
-{
+void DMA0_IRQHandler() {
     camera_dma();
 }
 
@@ -48,24 +52,30 @@ void DMA0_IRQHandler()
 /*!
  *  @brief      定时中断函数， 编码器
  *  @since      v1.0
+	encode_cnt = tpm_pulse_get(TPM2);
+	
+	tpm_pulse_clean(TPM2);
  */
-uint16 encode_cnt;
+
+#define KD 0.8
+extern int offset, velocity;
 
 void PIT_IRQHandler() {
 	PIT_Flag_Clear(PIT0); 
+
+	static int last_offset = 0;
+	if (last_offset == 0)
+		last_offset = offset;
+
+	offset += (offset - last_offset) * KD;
+	last_offset = offset;
 	
-	//编码器计数获取
-	encode_cnt = tpm_pulse_get(TPM2);
-	
-	//清零
-	tpm_pulse_clean(TPM2);
+	tpm_pwm_duty(TPM1,TPM_CH0, MID + offset);
+	tpm_pwm_duty(TPM0,TPM_CH1,0);
+#ifdef _MOTO_
+	tpm_pwm_duty(TPM0,TPM_CH0, velocity);
+#else
+	tpm_pwm_duty(TPM0,TPM_CH0, 0);
+#endif
 }
 
-
-/*!
- *  @brief      获取编码器计数
- *  @since      v1.0
- */
-uint16 get_encode_cnt() {
-	return encode_cnt;
-}

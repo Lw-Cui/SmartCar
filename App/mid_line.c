@@ -166,6 +166,8 @@ void find_left_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point *st
 				startp->y -= 1;
 			else
 				startp->x--;
+		} else {
+			break;
 		}
 	}
 	if (empty(*endp))
@@ -180,6 +182,8 @@ void find_right_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point *s
 				startp->y += 1;
 			else
 				startp->x--;
+		} else {
+			break;
 		}
 	}
 	if (empty(*endp))

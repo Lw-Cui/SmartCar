@@ -29,27 +29,6 @@
 #include "MKL_it.h"
 #include "math.h"
 
-/*!
- *  @brief      确定方向
- *  @param      new_dir		中线数组
- *  @param      len			数组长度
- *  @since      v1.0
- *
- *  OPTION CONTROL FUNCTION
- *
-int16 get_offset(Point start, Point end) {
-	double tanx = (double)abs(start.y - end.y) / (double)abs(start.x - end.x);
-	double tan30 = sqrt(3) / 3;
-	if (tanx > tan30)
-		tanx = tan30;
-
-	if (end.y < start.y)
-		return tanx / tan30 * OFFSET * -1;
-	else
-		return tanx / tan30 * OFFSET;
-}
-
-*/
 int max(int c1, int c2) {
 	return c1 > c2? c1: c2;
 }
@@ -58,41 +37,62 @@ int min(int c1, int c2) {
 	return c1 < c2? c1: c2;
 }
 
-#define MAX_LEN 170
-#define MIN_LEN 20
-#define MAX_OFFSET 48
-#define K 3
-int16 get_offset(Point new_dir[], int len) {
-	if (len < MIN_LEN) return 0;
-
-	int offset = new_dir[MAX_LEN / 2].y - CAMERA_W / 2;
-
-	if (len < MAX_LEN)
-		offset *= (double)MAX_LEN / len;
-
-	if (offset > 0)
-		return min(MAX_OFFSET, offset * K);
-	else
-		return max(-MAX_OFFSET, offset * K);
-}
-
-/*!
- *  @brief      边线修正
+/*
+ *  @brief      底边修正
  *  @param      
  *  @param      len			数组长度
  *  @since      v1.0
-int16 amend_boundary(uint8 img[][CAMERA_W]) {
+ */
+int16 bottom_amendment(uint8 img[][CAMERA_W]) {
 	int left = 0;
 	int right = CAMERA_W - 1;
 	for (int i = 0; i < CAMERA_W / 2; i++) {
 		if (img[CAMERA_H - 1][CAMERA_W / 2 - i] == BLACK && left == 0)
-			left = i;
+			left = CAMERA_W / 2 - i;
 		if (img[CAMERA_H - 1][CAMERA_W / 2 + i] == BLACK && right == CAMERA_W - 1)
-			right = i;
+			right = CAMERA_W / 2 + i;
 	}
-	return pow(((right + left) / 2 - CAMERA_W / 2), 3) / 266;
+	return (right + left) / 2 - CAMERA_W / 2;
 }
-*/
+
+/*
+ *  @brief      边线修正
+ *  @param      
+ *  @param      len			数组长度
+ *  @since      v1.0
+ */
+#define MAX_LEN 120
+#define MIN_LEN 20
+int16 boundary_amendment(Point new_dir[], int len) {
+	if (len < MIN_LEN) return 0;
+	int offset = 0;
+
+	if (len > MAX_LEN) {
+		offset = new_dir[MAX_LEN / 2].y - new_dir[0].y;
+	} else if (len < MAX_LEN) {
+		offset = new_dir[len / 2].y - new_dir[0].y;
+		offset *= ((double)MAX_LEN / len);
+	}
+	return offset;
+}
+
+#define MAX_OFFSET 47
+
+#define K1 2.5
+#define K2 1.5
+#define K3 0.8
+int16 get_offset(uint8 img[][CAMERA_W], Point new_dir[], int len) {
+	int offset = boundary_amendment(new_dir, len) * K1;
+	if (abs(offset) > MAX_OFFSET / 3)
+		offset += bottom_amendment(img) * K2;
+	else
+		offset += bottom_amendment(img) * K3;
+
+	if (offset > 0)
+		return min(MAX_OFFSET, offset);
+	else
+		return max(-MAX_OFFSET, offset);
+}
 
 /*!
  *  @brief      确定速度
@@ -127,41 +127,7 @@ int16 get_velocity(int16 offset, int16 velocity) {
 	}
 }
 */
-#define VINIT 100
+#define VINIT 120
 int16 get_velocity() {
 	return VINIT;
-}
-
-/*!
- *  @brief      确定方向
- *  @param      new_dir		中线数组
- *  @param      len			数组长度
- *  @since      v1.0
- *	@reference
-		tpm_pwm_duty(TPM1,TPM_CH0,320);
-
-		电机占空比 int 1000
-		tpm_pwm_duty(TPM0,TPM_CH0,50);	
-		tpm_pwm_duty(TPM0,TPM_CH1, 0);
- */
-
-void adjustment(uint8 img[][CAMERA_W], Point new_dir[], int16 len) {
-	//int offset = get_offset(new_dir, len) + amend_boundary(img);
-	int offset = get_offset(new_dir, len);
-	
-	tpm_pwm_duty(TPM1,TPM_CH0, MID + offset);
-	tpm_pwm_duty(TPM0,TPM_CH1,0);
-
-#ifdef _MOTO_
-	tpm_pwm_duty(TPM0,TPM_CH0, get_velocity());
-#else
-	tpm_pwm_duty(TPM0,TPM_CH0, 0);
-#endif
-
-#ifdef _SEND_
-	for (int i = 0; i < CAMERA_W; i++)
-		img[CAMERA_H - 2][i] = WHITE;
-	for (int i = 0; i < abs(offset); i++)
-		img[CAMERA_H - 2][i] = BLACK;
-#endif
 }

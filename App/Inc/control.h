@@ -25,8 +25,9 @@
 #ifndef _CONTROL_H_
 #define _CONTROL_H_
 #include "point.h"
-#define MID 312
-void adjustment(uint8 img[][CAMERA_W], Point new_dir[], int16 len);
+
+int16 get_velocity();
+int16 get_offset(uint8 img[][CAMERA_W], Point new_dir[], int len);
 
 #endif
 

@@ -26,11 +26,10 @@
  *       #define VECTOR_003    HardFault_Handler    重新定义硬件上访中断服务函数
  */
 #include "include.h"
+#define MID 243
 
 void PORTA_IRQHandler();
 void DMA0_IRQHandler();
 void PIT_IRQHandler();
-
-uint16 get_encode_cnt();
 
 #endif  //__MK60_IT_H__

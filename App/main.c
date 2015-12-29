@@ -41,6 +41,12 @@ void init_interrupt() {
     set_vector_handler(PORTA_VECTORn ,PORTA_IRQHandler);    //设置PORTA的中断服务函数为 PORTA_IRQHandler
     set_vector_handler(DMA0_VECTORn ,DMA0_IRQHandler);      //设置DMA0的中断服务函数为 PORTA_IRQHandler
 
+	/*
+    pit_init_ms(PIT0, 20);
+    set_vector_handler(PIT_VECTORn, PIT_IRQHandler);
+    enable_irq(PIT_IRQn);
+	*/
+
 	EnableInterrupts;
 }
 
@@ -50,6 +56,8 @@ void init_interrupt() {
  */
 
 #define LEN 255
+int offset, velocity;
+
 void main() {       
 	uint8 imgbuff[CAMERA_SIZE];
 	camera_init(imgbuff);  
@@ -61,7 +69,9 @@ void main() {
     while(1) {
 		camera_get_img();
 		img_extract(img, imgbuff,CAMERA_SIZE);
-		adjustment(img, new_dir, direction(img, new_dir));
+		offset = get_offset(img, new_dir, direction(img, new_dir));
+		velocity = get_velocity();
+
 #ifdef _SEND_
 		vcan_sendimg(img, CAMERA_H, CAMERA_W);                  //发送解压后的图像数据
 #endif

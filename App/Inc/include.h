@@ -4,8 +4,8 @@
 /*
  * 定义宏代表打开相应功能
  */
-//#define _MOTO_
-//#define _CAMERA_
+#define _MOTO_
+#define _SEND_
 
 /*
  * Include 用户自定义的头文件
