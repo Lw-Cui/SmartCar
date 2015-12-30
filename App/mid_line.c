@@ -159,7 +159,7 @@ void add_boundary(Point prev[][CAMERA_W], Point *start, Point *end, int8 ypos) {
  *  @since      v2.0
  */
 void find_left_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point *startp, Point *endp) {
-	while (startp->x > CAMERA_H / 2) {
+	while (startp->x > CAMERA_H / 3) {
 		*endp = search(img, *startp, prev);
 		if (empty(*endp)) {
 			if (startp->y != 0)
@@ -175,7 +175,7 @@ void find_left_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point *st
 }
 
 void find_right_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point *startp, Point *endp) {
-	while (startp->x > CAMERA_H / 2) {
+	while (startp->x > CAMERA_H / 3) {
 		*endp = search(img, *startp, prev);
 		if (empty(*endp)) {
 			if (startp->y != CAMERA_W - 1)

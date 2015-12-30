@@ -76,17 +76,17 @@ int16 boundary_amendment(Point new_dir[], int len) {
 	return offset;
 }
 
-#define MAX_OFFSET 47
+#define MAX_OFFSET 65
 
-#define K1 2.5
-#define K2 1.5
-#define K3 0.8
+#define K1 2
+#define K2 2.3
+#define K3 1.5
 int16 get_offset(uint8 img[][CAMERA_W], Point new_dir[], int len) {
-	int offset = boundary_amendment(new_dir, len) * K1;
-	if (abs(offset) > MAX_OFFSET / 3)
-		offset += bottom_amendment(img) * K2;
+	int offset = bottom_amendment(img) * K2;
+	if (abs(offset) < MAX_OFFSET / 3)
+		offset += boundary_amendment(new_dir, len) * K1;
 	else
-		offset += bottom_amendment(img) * K3;
+		offset *= 2;
 
 	if (offset > 0)
 		return min(MAX_OFFSET, offset);

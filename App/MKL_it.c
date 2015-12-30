@@ -57,7 +57,7 @@ void DMA0_IRQHandler() {
 	tpm_pulse_clean(TPM2);
  */
 
-#define KD 0.8
+#define KD 0.2
 extern int offset, velocity;
 
 void PIT_IRQHandler() {
@@ -79,3 +79,16 @@ void PIT_IRQHandler() {
 #endif
 }
 
+void uart_handler() {
+    UARTn_e uratn = FIRE_PORT;
+
+	//接收数据寄存器满
+    if(UART_S1_REG(UARTN[uratn]) & UART_S1_RDRF_MASK)   {
+        //用户需要处理接收数据
+    }
+
+	//发送数据寄存器空
+    if(UART_S1_REG(UARTN[uratn]) & UART_S1_TDRE_MASK)  {
+        //用户需要处理发送数据
+    }
+}
