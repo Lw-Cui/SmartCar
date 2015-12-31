@@ -49,6 +49,23 @@ void DMA0_IRQHandler() {
 }
 
 
+int max(int c1, int c2) {
+	return c1 > c2? c1: c2;
+}
+
+int min(int c1, int c2) {
+	return c1 < c2? c1: c2;
+}
+
+#define MAX_OFFSET 65
+int protect(int offset) {
+	if (offset > 0)
+		return min(MAX_OFFSET, offset);
+	else
+		return max(-MAX_OFFSET, offset);
+}
+
+
 /*!
  *  @brief      定时中断函数， 编码器
  *  @since      v1.0
@@ -56,10 +73,8 @@ void DMA0_IRQHandler() {
 	
 	tpm_pulse_clean(TPM2);
  */
-
-#define KD 0.2
+#define KD 0.5
 extern int offset, velocity;
-
 void PIT_IRQHandler() {
 	PIT_Flag_Clear(PIT0); 
 
@@ -69,8 +84,9 @@ void PIT_IRQHandler() {
 
 	offset += (offset - last_offset) * KD;
 	last_offset = offset;
-	
-	tpm_pwm_duty(TPM1,TPM_CH0, MID + offset);
+
+	tpm_pwm_duty(TPM1,TPM_CH0, MID + protect(offset));
+
 	tpm_pwm_duty(TPM0,TPM_CH1,0);
 #ifdef _MOTO_
 	tpm_pwm_duty(TPM0,TPM_CH0, velocity);

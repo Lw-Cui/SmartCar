@@ -26,7 +26,7 @@
  *       #define VECTOR_003    HardFault_Handler    重新定义硬件上访中断服务函数
  */
 #include "include.h"
-#define MID 346
+#define MID 315
 
 void PORTA_IRQHandler();
 void DMA0_IRQHandler();

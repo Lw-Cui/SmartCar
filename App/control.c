@@ -29,13 +29,6 @@
 #include "MKL_it.h"
 #include "math.h"
 
-int max(int c1, int c2) {
-	return c1 > c2? c1: c2;
-}
-
-int min(int c1, int c2) {
-	return c1 < c2? c1: c2;
-}
 
 /*
  *  @brief      µ×±ßÐÞÕý
@@ -76,22 +69,20 @@ int16 boundary_amendment(Point new_dir[], int len) {
 	return offset;
 }
 
-#define MAX_OFFSET 65
 
 #define K1 2
 #define K2 2.3
 #define K3 1.5
 int16 get_offset(uint8 img[][CAMERA_W], Point new_dir[], int len) {
+	/*
 	int offset = bottom_amendment(img) * K2;
 	if (abs(offset) < MAX_OFFSET / 3)
 		offset += boundary_amendment(new_dir, len) * K1;
 	else
 		offset *= 2;
+	*/
 
-	if (offset > 0)
-		return min(MAX_OFFSET, offset);
-	else
-		return max(-MAX_OFFSET, offset);
+	int offset = (new_dir[len / 2].y - CAMERA_W / 2) * 3;
 }
 
 /*!
