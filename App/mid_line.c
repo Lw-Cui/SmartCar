@@ -84,6 +84,7 @@ Point search(uint8 img[][CAMERA_W], Point position, Point prev[][CAMERA_W]) {
 				queue[end++] = np;
 				end %= QLEN;
 
+				if (terminal(np) && abs(np.x - position.x) > 10)
 					return np;
 			}
 		}
