@@ -150,44 +150,18 @@ void add_boundary(Point prev[][CAMERA_W], Point *start, Point *end, int8 ypos) {
 	prev[end->x][end->y] = prev[start->x][start->y] = *start;
 }
 
-/*!
- *  @brief      左右边线查找
- *  @param      img			图像数组
- *  @param      prev		图像回溯
- *  @param      startp		起始指针
- *  @param      endp		终点指针
- *  @since      v2.0
- */
-void find_left_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point *startp, Point *endp) {
-	while (startp->x > CAMERA_H / 3) {
-		*endp = search(img, *startp, prev);
-		if (empty(*endp)) {
-			if (startp->y != 0)
-				startp->y -= 1;
-			else
-				startp->x--;
-		} else {
-			break;
-		}
-	}
-	if (empty(*endp))
-		add_boundary(prev, startp, endp, 0);
+void next_right_start(Point *startp) {
+	if (startp->y != CAMERA_W - 1)
+		startp->y += 1;
+	else
+		startp->x--;
 }
 
-void find_right_boundary(uint8 img[][CAMERA_W], Point prev[][CAMERA_W], Point *startp, Point *endp) {
-	while (startp->x > CAMERA_H / 3) {
-		*endp = search(img, *startp, prev);
-		if (empty(*endp)) {
-			if (startp->y != CAMERA_W - 1)
-				startp->y += 1;
-			else
-				startp->x--;
-		} else {
-			break;
-		}
-	}
-	if (empty(*endp))
-		add_boundary(prev, startp, endp, CAMERA_W - 1);
+void next_left_start(Point *startp) {
+	if (startp->y != 0)
+		startp->y -= 1;
+	else
+		startp->x--;
 }
 
 /*!
@@ -202,8 +176,20 @@ uint8 direction(uint8 img[][CAMERA_W], Point new_dir[CAMERA_W]) {
 	Point left_start = {CAMERA_H - 1, CAMERA_W / 2}, right_start = {CAMERA_H - 1, CAMERA_W / 2};
 	Point left_end = {EMPTY, EMPTY}, right_end = {EMPTY, EMPTY};
 
-	find_left_boundary(img, prev, &left_start, &left_end);
-	find_right_boundary(img, prev, &right_start, &right_end);
+	while (left_start.x > CAMERA_H / 3 || right_start.x > CAMERA_H / 3) {
+		if (empty(left_end))
+			left_end = search(img, left_start, prev);
+		if (empty(right_end))
+			right_end = search(img, right_start, prev);
+
+		next_right_start(&right_start);
+		next_left_start(&left_start);
+	}
+
+	if (empty(left_end))
+		add_boundary(prev, &right_start, &right_end, CAMERA_W - 1);
+	if (empty(right_end))
+		add_boundary(prev, &left_start, &left_end, 0);
 
 	return mid_line(img, prev, new_dir, left_end, right_end);
 }
