@@ -61,28 +61,31 @@ int16 boundary_amendment(Point new_dir[], int len) {
 	int offset = 0;
 
 	if (len > MAX_LEN) {
-		offset = new_dir[MAX_LEN / 2].y - new_dir[0].y;
+		offset = new_dir[MAX_LEN / 2].y - CAMERA_W / 2;
 	} else if (len < MAX_LEN) {
-		offset = new_dir[len / 2].y - new_dir[0].y;
+		offset = new_dir[len / 2].y - CAMERA_W / 2;
 		offset *= ((double)MAX_LEN / len);
 	}
 	return offset;
 }
 
 
+/*
 #define K1 2
 #define K2 2.3
-#define K3 1.5
-int16 get_offset(uint8 img[][CAMERA_W], Point new_dir[], int len) {
-	/*
-	int offset = bottom_amendment(img) * K2;
-	if (abs(offset) < MAX_OFFSET / 3)
-		offset += boundary_amendment(new_dir, len) * K1;
-	else
-		offset *= 2;
-	*/
+*/
 
-	int offset = (new_dir[len / 2].y - CAMERA_W / 2) * 3;
+#define K1 2
+#define K2 2.3
+#define K3 2.3
+int16 get_offset(uint8 img[][CAMERA_W], Point new_dir[], int len) {
+	int boundary = boundary_amendment(new_dir, len);
+	int botton = bottom_amendment(img);
+
+	if (botton * boundary > 0)
+		return boundary * K1 + botton * K2;
+	else
+		return boundary * K3;
 }
 
 /*!

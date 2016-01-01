@@ -27,6 +27,7 @@
  */
 #include "include.h"
 #define MID 315
+#define MAX_OFFSET 65
 
 void PORTA_IRQHandler();
 void DMA0_IRQHandler();

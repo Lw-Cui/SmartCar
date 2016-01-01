@@ -57,7 +57,6 @@ int min(int c1, int c2) {
 	return c1 < c2? c1: c2;
 }
 
-#define MAX_OFFSET 65
 int protect(int offset) {
 	if (offset > 0)
 		return min(MAX_OFFSET, offset);
